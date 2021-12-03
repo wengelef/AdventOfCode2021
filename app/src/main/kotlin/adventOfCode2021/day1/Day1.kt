@@ -2008,7 +2008,7 @@ class Day1 {
         }
 
     fun solve(): Int {
-        val items = input.lines().map { it.toInt() }.toTypedArray()
+        val items = input.lines().map { it.toInt() }.windowed(3).map { it.sum() }
 
         var increases = 0
 
