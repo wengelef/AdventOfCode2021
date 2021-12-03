@@ -3,8 +3,8 @@
  */
 package adventOfCode2021
 
-import adventOfCode2021.day1.Day1
+import adventOfCode2021.day2.Day2
 
 fun main() {
-    println(Day1().solve())
+    println(Day2().solve())
 }
