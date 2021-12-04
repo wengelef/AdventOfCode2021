@@ -617,15 +617,14 @@ class Day4 {
         for (draw in input) {
             boards.forEach { board -> board.mark(draw) }
 
-            var result = 0
-            boards.forEach { board ->
+            val iterator = boards.iterator()
+            while (iterator.hasNext()) {
+                val board = iterator.next()
                 if (board.hasWinner()) {
-                    result = board.getSum { !it.marked } * draw
+                    iterator.remove()
+                    if (boards.isEmpty()) return board.getSum { !it.marked } * draw
                 }
             }
-            boards.removeAll { it.hasWinner() }
-
-            if (boards.isEmpty()) return result
         }
 
         return 0
@@ -636,39 +635,19 @@ class Day4 {
     }
 
     private fun BingoBoard.hasWinner(): Boolean {
-        return diagonal().hasWon || rows().any { it.hasWon } || columns().any { it.hasWon }
+        return diagonal().hasWon ||
+            straight { x, y -> get(y)[x] }.any { it.hasWon } ||
+            straight { x, y -> get(x)[y] }.any { it.hasWon }
     }
 
-    private fun BingoBoard.rows(): List<Row> {
+    private fun BingoBoard.straight(selector: BingoBoard.(Int, Int) -> BingoValue): List<Row> {
         val rows = mutableListOf<Row>()
         for (y in this.indices) {
             val values = mutableListOf<BingoValue>()
             for (x in this[y].indices) {
-                values.add(this[y][x])
+                values.add(selector(y, x))
             }
-            rows.add(
-                Row(
-                    values.sumOf { it.number },
-                    values.all { it.marked },
-                )
-            )
-        }
-        return rows
-    }
-
-    private fun BingoBoard.columns(): List<Row> {
-        val rows = mutableListOf<Row>()
-        for (y in this.indices) {
-            val values = mutableListOf<BingoValue>()
-            for (x in this[y].indices) {
-                values.add(this[x][y])
-            }
-            rows.add(
-                Row(
-                    values.sumOf { it.number },
-                    values.all { it.marked },
-                )
-            )
+            rows.add(Row(values.all { it.marked }))
         }
         return rows
     }
@@ -678,10 +657,7 @@ class Day4 {
         for (y in this.indices) {
             values.add(this[y][y])
         }
-        return Row(
-            values.sumOf { it.number },
-            values.all { it.marked },
-        )
+        return Row(values.all { it.marked })
     }
 
     private fun BingoBoard.mark(draw: Int) {
@@ -693,7 +669,7 @@ class Day4 {
                 }
                 if (bingoValue.number == draw) {
                     this[x][y] = bingoValue.copy(marked = true)
-                    break
+                    return
                 }
             }
         }
@@ -708,7 +684,7 @@ class Day4 {
         .map { it.toMutableList() }
         .toMutableList()
 
-    data class Row(val sum: Int, val hasWon: Boolean)
+    data class Row(val hasWon: Boolean)
 
     data class BingoValue(val number: Int, val marked: Boolean = false)
 }
