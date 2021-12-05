@@ -8,30 +8,58 @@ typealias Diagram = Array<Array<Point>>
 
 class Day5 {
 
-    fun solve() = testInputs
-        .forEach { line -> diagram.draw(line) }
-        .let { diagram.overlaps() }
+    fun solve() = testInputs.fold(0) { acc, line -> acc + diagram.draw(line) }
 
-    private fun Diagram.overlaps(): Int {
-        return sumOf { it.count { point -> point.value > 1 } }
+    private fun Diagram.draw(line: Line): Int = when (line) {
+        is Line.Vertical -> draw(line)
+        is Line.Horizontal -> draw(line)
+        is Line.Diagonal -> draw(line)
     }
 
-    private fun Diagram.draw(line: Line) {
-        when {
-            line.isVertical() -> drawVertical(line.from.x, min(line.from.y, line.to.y), max(line.from.y, line.to.y))
-            line.isHorizontal() -> drawHorizontal(line.from.y, min(line.from.x, line.to.x), max(line.from.x, line.to.x))
-            line.isDiagonal() -> drawDiagonal(line)
+    private fun Diagram.draw(line: Line.Horizontal): Int {
+        val y = line.from.y
+        val from = min(line.from.x, line.to.x)
+        val to = max(line.from.x, line.to.x)
+        var result = 0
+        for (x in from..to) {
+            val point = this[y][x]
+            if (point.value == 1) {
+                result ++
+            }
+            this[y][x] = point.copy(value = point.value + 1)
         }
+        return result
     }
 
-    private fun Diagram.drawDiagonal(line: Line) {
+    private fun Diagram.draw(line: Line.Vertical): Int {
+        val x = line.from.x
+        val from = min(line.from.y, line.to.y)
+        val to = max(line.from.y, line.to.y)
+
+        var result = 0
+        for (y in from..to) {
+            val point = this[y][x]
+            if (point.value == 1) {
+                result ++
+            }
+            this[y][x] = point.copy(value = point.value + 1)
+        }
+        return result
+    }
+
+    private fun Diagram.draw(line: Line.Diagonal): Int {
         val start = if (line.from.y < line.to.y) line.from else line.to
         val end = if (line.from.y > line.to.y) line.from else line.to
 
         var x = start.x
 
+        var result = 0
+
         for (y in start.y..end.y) {
             val point = this[y][x]
+            if (point.value == 1) {
+                result ++
+            }
             this[y][x] = point.copy(value = point.value + 1)
 
             if (start.x > end.x) {
@@ -40,31 +68,8 @@ class Day5 {
                 x++
             }
         }
+        return result
     }
-
-    private fun Diagram.drawVertical(x: Int, from: Int, to: Int) {
-        for (y in from..to) {
-            val point = this[y][x]
-            this[y][x] = point.copy(value = point.value + 1)
-        }
-    }
-
-    private fun Diagram.drawHorizontal(y: Int, from: Int, to: Int) {
-        for (x in from..to) {
-            val point = this[y][x]
-            this[y][x] = point.copy(value = point.value + 1)
-        }
-    }
-
-    private fun Line.isVertical(): Boolean {
-        return from.x == to.x
-    }
-
-    private fun Line.isHorizontal(): Boolean {
-        return from.y == to.y
-    }
-
-    private fun Line.isDiagonal() = !isHorizontal() && !isVertical()
 
     private val testInputs = """
 565,190 -> 756,381
@@ -572,10 +577,20 @@ class Day5 {
         .map { fromTo ->
             fromTo.split(" -> ")
                 .let { (from, to) ->
-                    Line(
-                        from = Destination(from.split(",")[0].toInt(), from.split(",")[1].toInt()),
-                        to = Destination(to.split(",")[0].toInt(), to.split(",")[1].toInt()),
+                    val dest1 = Destination(
+                        x = from.split(",")[0].toInt(),
+                        y = from.split(",")[1].toInt(),
                     )
+                    val dest2 = Destination(
+                        x = to.split(",")[0].toInt(),
+                        y = to.split(",")[1].toInt(),
+                    )
+
+                    when {
+                        dest1.x == dest2.x -> Line.Vertical(dest1, dest2)
+                        dest1.y == dest2.y -> Line.Horizontal(dest1, dest2)
+                        else -> Line.Diagonal(dest1, dest2)
+                    }
                 }
         }
 
@@ -585,6 +600,12 @@ class Day5 {
     private val diagram = Array(maxY) { Array(maxX) { Point() } }
 
     data class Point(val value: Int = 0)
-    data class Line(val from: Destination, val to: Destination)
+
+    sealed class Line(open val from: Destination, open val to: Destination) {
+        data class Horizontal(override val from: Destination, override val to: Destination) : Line(from, to)
+        data class Vertical(override val from: Destination, override val to: Destination) : Line(from, to)
+        data class Diagonal(override val from: Destination, override val to: Destination) : Line(from, to)
+    }
+
     data class Destination(val x: Int, val y: Int)
 }
