@@ -1,4 +1,4 @@
-package adventOfCode2021.day1
+package adventOfCode2021
 
 class Day1 {
     val input: String

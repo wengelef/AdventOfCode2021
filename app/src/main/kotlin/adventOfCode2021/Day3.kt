@@ -1,4 +1,4 @@
-package adventOfCode2021.day3
+package adventOfCode2021
 
 class Day3 {
 

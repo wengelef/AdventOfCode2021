@@ -1,4 +1,4 @@
-package adventOfCode2021.day4
+package adventOfCode2021
 
 typealias BingoBoard = List<MutableList<Day4.BingoValue>>
 
