@@ -4,5 +4,5 @@
 package adventOfCode2021
 
 fun main() {
-    println(Day5().solve())
+    println(Day6().solve())
 }
