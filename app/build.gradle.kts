@@ -35,5 +35,5 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass.set("AdventOfCode2021.AppKt")
+    mainClass.set("adventOfCode2021.AppKt")
 }
